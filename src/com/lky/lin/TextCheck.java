@@ -13,113 +13,116 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class TextCheck {
-	public static double getSimilarity(String doc1, String doc2) {
-		if (doc1 != null && doc1.trim().length() > 0 && doc2 != null
-				&& doc2.trim().length() > 0) {
-			
-			Map<Integer, int[]> AlgorithmMap = new HashMap<Integer, int[]>();
-			
-			//½«Á½¸ö×Ö·û´®ÖĞµÄÖĞÎÄ×Ö·ûÒÔ¼°³öÏÖµÄ×ÜÊı·â×°µ½AlgorithmMapÖĞ
-			for (int i = 0; i < doc1.length(); i++) {
-				char d1 = doc1.charAt(i);
-				if(beHanZi(d1)){
-					int charIndex = getGB2312(d1);
-					if(charIndex != -1){
-						int[] fq = AlgorithmMap.get(charIndex);
-						if(fq != null && fq.length == 2){
-							fq[0]++;
-						}else {
-							fq = new int[2];
-							fq[0] = 1;
-							fq[1] = 0;
-							AlgorithmMap.put(charIndex, fq);
-						}
-					}
-				}
-			}
- 
-			for (int i = 0; i < doc2.length(); i++) {
-				char d2 = doc2.charAt(i);
-				if(beHanZi(d2)){
-					int charIndex = getGB2312(d2);
-					if(charIndex != -1){
-						int[] fq = AlgorithmMap.get(charIndex);
-						if(fq != null && fq.length == 2){
-							fq[1]++;
-						}else {
-							fq = new int[2];
-							fq[0] = 0;
-							fq[1] = 1;
-							AlgorithmMap.put(charIndex, fq);
-						}
-					}
-				}
-			}
-			
-			Iterator<Integer> iterator = AlgorithmMap.keySet().iterator();
-			double sqdoc1 = 0;
-			double sqdoc2 = 0;
-			double denominator = 0; 
-			while(iterator.hasNext()){
-				int[] c = AlgorithmMap.get(iterator.next());
-				denominator += c[0]*c[1];
-				sqdoc1 += c[0]*c[0];
-				sqdoc2 += c[1]*c[1];
-			}
-			
-			return denominator / Math.sqrt(sqdoc1*sqdoc2);
-		} else {
-			throw new NullPointerException(
-					" the Document is null or have not cahrs!!");
-		}
-	}
- 
-	public static boolean beHanZi(char ch) {
-		// ÅĞ¶ÏÊÇ·ñºº×Ö
-		return (ch >= 0x4E00 && ch <= 0x9FA5);
- 
-	}
- 
-	/**
-	 * ¸ù¾İÊäÈëµÄUnicode×Ö·û£¬»ñÈ¡ËüµÄGB2312±àÂë»òÕßascii±àÂë£¬
-	 * 
-	 * @param ch
-	 *            ÊäÈëµÄGB2312ÖĞÎÄ×Ö·û»òÕßASCII×Ö·û(128¸ö)
-	 * @return chÔÚGB2312ÖĞµÄÎ»ÖÃ£¬-1±íÊ¾¸Ã×Ö·û²»ÈÏÊ¶
-	 */
-	public static short getGB2312(char ch) {
-		try {
-			byte[] buffer = Character.toString(ch).getBytes("GB2312");
-			if (buffer.length != 2) {
-				// Õı³£Çé¿öÏÂbufferÓ¦¸ÃÊÇÁ½¸ö×Ö½Ú£¬·ñÔòËµÃ÷ch²»ÊôÓÚGB2312±àÂë£¬¹Ê·µ»Ø'?'£¬´ËÊ±ËµÃ÷²»ÈÏÊ¶¸Ã×Ö·û
-				return -1;
-			}
-			int b0 = (int) (buffer[0] & 0x0FF) - 161; // ±àÂë´ÓA1¿ªÊ¼£¬Òò´Ë¼õÈ¥0xA1=161
-			int b1 = (int) (buffer[1] & 0x0FF) - 161; // µÚÒ»¸ö×Ö·ûºÍ×îºóÒ»¸ö×Ö·ûÃ»ÓĞºº×Ö£¬Òò´ËÃ¿¸öÇøÖ»ÊÕ16*6-2=94¸öºº×Ö
-			return (short) (b0 * 94 + b1);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		return -1;
-	}
-	
-	public static void main(String[] args) {
-			try {
-				File file1 = new File("E:\\test1.0\\orig.txt");
-				File file2 = new File("E:\\test1.0\\orig_0.8_dis_1.txt");
-				FileInputStream in1 = new FileInputStream(file1);
-				FileInputStream in2 = new FileInputStream(file2);
-				byte byt[] = new byte[1024];
-				int len1 = in1.read(byt);
-				String s1 = new String(byt, 0, len1);
-				int len2 = in2.read(byt);
-				String s2 = new String(byt, 0, len2);
-				double f = new TextCheck().getSimilarity(s1, s2);
-				System.out.println(f);
-			} catch (Exception e) {
-				// TODO ×Ô¶¯Éú³ÉµÄ catch ¿é
-				e.printStackTrace();
-			}
-	}
+    public static double getSimilarity(String doc1, String doc2) {
+        if (doc1 != null && doc1.trim().length() > 0 && doc2 != null
+                && doc2.trim().length() > 0) {
+
+            Map<Integer, int[]> AlgorithmMap = new HashMap<Integer, int[]>();
+
+            //å°†ä¸¤ä¸ªå­—ç¬¦ä¸²ä¸­çš„ä¸­æ–‡å­—ç¬¦ä»¥åŠå‡ºç°çš„æ€»æ•°å°è£…åˆ°AlgorithmMapä¸­
+            for (int i = 0; i < doc1.length(); i++) {
+                char d1 = doc1.charAt(i);
+                if(beHanZi(d1)){
+                    int charIndex = getGB2312(d1);
+                    if(charIndex != -1){
+                        int[] fq = AlgorithmMap.get(charIndex);
+                        if(fq != null && fq.length == 2){
+                            fq[0]++;
+                        }else {
+                            fq = new int[2];
+                            fq[0] = 1;
+                            fq[1] = 0;
+                            AlgorithmMap.put(charIndex, fq);
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < doc2.length(); i++) {
+                char d2 = doc2.charAt(i);
+                if(beHanZi(d2)){
+                    int charIndex = getGB2312(d2);
+                    if(charIndex != -1){
+                        int[] fq = AlgorithmMap.get(charIndex);
+                        if(fq != null && fq.length == 2){
+                            fq[1]++;
+                        }else {
+                            fq = new int[2];
+                            fq[0] = 0;
+                            fq[1] = 1;
+                            AlgorithmMap.put(charIndex, fq);
+                        }
+                    }
+                }
+            }
+
+            Iterator<Integer> iterator = AlgorithmMap.keySet().iterator();
+            double sqdoc1 = 0;
+            double sqdoc2 = 0;
+            double denominator = 0;
+            while(iterator.hasNext()){
+                int[] c = AlgorithmMap.get(iterator.next());
+                denominator += c[0]*c[1];
+                sqdoc1 += c[0]*c[0];
+                sqdoc2 += c[1]*c[1];
+            }
+
+            return denominator / Math.sqrt(sqdoc1*sqdoc2);
+        } else {
+            throw new NullPointerException(
+                    " the Document is null or have not cahrs!!");
+        }
+    }
+
+    public static boolean beHanZi(char ch) {
+        // åˆ¤æ–­æ˜¯å¦æ±‰å­—
+        return (ch >= 0x4E00 && ch <= 0x9FA5);
+
+    }
+
+    /**
+     * æ ¹æ®è¾“å…¥çš„Unicodeå­—ç¬¦ï¼Œè·å–å®ƒçš„GB2312ç¼–ç æˆ–è€…asciiç¼–ç ï¼Œ
+     *
+     * @param ch
+     *            è¾“å…¥çš„GB2312ä¸­æ–‡å­—ç¬¦æˆ–è€…ASCIIå­—ç¬¦(128ä¸ª)
+     * @return chåœ¨GB2312ä¸­çš„ä½ç½®ï¼Œ-1è¡¨ç¤ºè¯¥å­—ç¬¦ä¸è®¤è¯†
+     */
+    public static short getGB2312(char ch) {
+        try {
+            byte[] buffer = Character.toString(ch).getBytes("GB2312");
+            if (buffer.length != 2) {
+                // æ­£å¸¸æƒ…å†µä¸‹bufferåº”è¯¥æ˜¯ä¸¤ä¸ªå­—èŠ‚ï¼Œå¦åˆ™è¯´æ˜chä¸å±äºGB2312ç¼–ç ï¼Œæ•…è¿”å›'?'ï¼Œæ­¤æ—¶è¯´æ˜ä¸è®¤è¯†è¯¥å­—ç¬¦
+                return -1;
+            }
+            int b0 = (int) (buffer[0] & 0x0FF) - 161; // ç¼–ç ä»A1å¼€å§‹ï¼Œå› æ­¤å‡å»0xA1=161
+            int b1 = (int) (buffer[1] & 0x0FF) - 161; // ç¬¬ä¸€ä¸ªå­—ç¬¦å’Œæœ€åä¸€ä¸ªå­—ç¬¦æ²¡æœ‰æ±‰å­—ï¼Œå› æ­¤æ¯ä¸ªåŒºåªæ”¶16*6-2=94ä¸ªæ±‰å­—
+            return (short) (b0 * 94 + b1);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        try {
+            if(args.length!=3){
+                System.out.println("è¯·è¾“å…¥3ä¸ªå‚æ•°");
+                return;
+            }
+            File file1 = new File(args[0]);
+            File file2 = new File(args[1]);
+            FileInputStream in1 = new FileInputStream(file1);
+            FileInputStream in2 = new FileInputStream(file2);
+            byte byt[] = new byte[1024];
+            int len1 = in1.read(byt);
+            String s1 = new String(byt, 0, len1);
+            int len2 = in2.read(byt);
+            String s2 = new String(byt, 0, len2);
+            double f = new TextCheck().getSimilarity(s1, s2);
+            System.out.println(f);
+        } catch (Exception e) {
+            // TODO è‡ªåŠ¨ç”Ÿæˆçš„ catch å—
+            e.printStackTrace();
+        }
+    }
 }
- 
